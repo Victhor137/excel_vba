@@ -1,6 +1,6 @@
 # README — Explaining project files
 
-Este README foi gerado automaticamente pelo assistente. Ele descreve os arquivos encontrados no ZIP enviado e inclui trechos dos códigos legíveis. Se seu projeto contiver arquivos VBA embutidos em `.xlsm`/`.xlsb`, esses aparecem como binários e não foram extraídos para texto aqui — veja nota abaixo.
+Este README foi gerado automaticamente por IA. Ele descreve os arquivos encontrados no ZIP enviado e inclui trechos dos códigos legíveis. Se seu projeto contiver arquivos VBA embutidos em `.xlsm`/`.xlsb`, esses aparecem como binários e não foram extraídos para texto aqui — veja nota abaixo.
 
 ## Resumo da estrutura do projeto
 

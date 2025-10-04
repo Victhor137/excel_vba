@@ -1,0 +1,302 @@
+# README — Macros VBA para Extratos e Exportação
+
+> Coleção de macros em VBA para processar extratos bancários, padronizar datas, remover linhas vazias, colorir históricos, mover dados entre planilhas e exportar TXT (padrão Domínio e personalizado).
+
+---
+
+## Índice
+
+1. Descrição geral
+2. Requisitos
+3. Instalação / Importação
+4. Como executar
+5. Módulos e explicação de cada macro
+
+   * `extrair_extratobancario.vba` — `Planilha_Processo_TratarDados`
+   * `remover_linhas_vazias.vba` — `Remover_Vazias`
+   * `colorir_historicos_iguais.vba` — `Planilha_Modelo_Colorir`
+   * `moverdados.vba` — `Planilha_Extrato_CopiarValoresParaPlanilhaModelo`
+   * `exportar_txt_padrao_dominiocontabil.vba` — `Planilha_Dominio_Exportar_TXT`
+   * `exportar_dados_txt_personalizado_mesma_pasta_do_arquivo.vba` — `Planilha_Modelo_Exportar_Personalizado`
+   * `removersinal_cred_deb.vba` — `Planilha_Extrato_SepararCreditoDebito`
+   * `alterar_datas_definir_uma_padrao.vba` — `Planilha_Modelo_PreencherDatas`
+6. Boas práticas e avisos
+7. Solução de problemas (troubleshooting)
+8. Contribuições
+9. Licença
+
+---
+
+## 1. Descrição geral
+
+Este repositório reúne macros escritas em VBA para uso em planilhas Excel com foco em:
+
+* Tratamento de extratos bancários (padronizar colunas, separar crédito/débito, corrigir sinais).
+* Limpeza de dados (remoção de linhas vazias na faixa definida).
+* Organização (mover blocos de dados entre abas, preencher datas automaticamente).
+* Visual (colorir linhas com históricos iguais para facilitar conferência).
+* Exportação para arquivos TXT nos formatos: padrão "Domínio Contábil" e exportação personalizada (com formulário de seleção de colunas).
+
+As macros foram pensadas para serem usadas em conjuntos com planilhas nomeadas conforme os padrões indicados nas descrições das macros (detalhado abaixo).
+
+---
+
+## 2. Requisitos
+
+* Microsoft Excel com suporte a macros (Windows ou Mac com suporte a VBA).
+* Habilitar macros (Ativar conteúdo) ao abrir a pasta de trabalho.
+* Se usar a macro personalizada de exportação (`Planilha_Modelo_Exportar_Personalizado`), o formulário `frmSelecionarColunas` deve existir no projeto VBA (o código espera este UserForm).
+* Recomendado: fazer uma cópia do arquivo antes de executar macros que modificam/ apagam linhas.
+
+---
+
+## 3. Instalação / Importação
+
+1. Abra o Excel e o arquivo de trabalho onde deseja usar as macros (ou crie uma nova pasta de trabalho).
+2. Pressione `Alt + F11` para abrir o Editor do Visual Basic (VBE).
+3. No menu `File > Import File...`, selecione os arquivos `.vba` (ou cole o conteúdo em novos módulos):
+
+   * `extrair_extratobancario.vba`
+   * `remover_linhas_vazias.vba`
+   * `colorir_historicos_iguais.vba`
+   * `moverdados.vba`
+   * `exportar_txt_padrao_dominiocontabil.vba`
+   * `exportar_dados_txt_personalizado_mesma_pasta_do_arquivo.vba`
+   * `removersinal_cred_deb.vba`
+   * `alterar_datas_definir_uma_padrao.vba`
+4. Se houver um UserForm (`frmSelecionarColunas`) necessário, importe-o também ou crie um formulário com os mesmos controles (checboxes) esperados pelo código.
+5. Salve a pasta de trabalho como `*.xlsm` (habilitado para macros).
+
+---
+
+## 4. Como executar
+
+* Pelo Excel: `Desenvolvedor > Macros` (ou `Alt + F8`), selecione o nome da Sub e clique em `Executar`.
+* Você pode associar qualquer macro a um botão na planilha (Inserir > Formulários > Botão) para facilitar o uso por usuários não técnicos.
+* Sempre faça backup antes de executar macros destrutivas (remoção/exclusão de linhas).
+
+---
+
+## 5. Módulos e explicação de cada macro
+
+> **Observação geral:** Abaixo constam as premissas baseadas no código. Ajuste os nomes de abas/colunas no código caso seu arquivo tenha layout diferente.
+
+### `extrair_extratobancario.vba` — `Planilha_Processo_TratarDados`
+
+**Objetivo:**
+Padronizar e tratar os dados de um extrato bancário/planilha, encontrando colunas pelas cabeças (ex.: `DATA`, `HIST`, `VALOR`) e aplicando formatos ou transformações necessárias.
+
+**Entradas esperadas / premissas:**
+
+* Executar na aba que contém o extrato (ativa quando a macro roda).
+* Cabeçalhos de coluna em uma linha fixa (o módulo busca os nomes das colunas para definir índices).
+* Pode assumir linhas de título e uma área de dados que começa em uma linha específica (ex.: a partir da linha 3 ou 9; confira e ajuste se necessário).
+
+**O que faz (resumo):**
+
+* Identifica colunas de data, histórico e valor pelos nomes das colunas.
+* Normaliza formatos de data.
+* Realiza outras tratativas específicas observadas no código (ex.: separação de valores, cálculos de descontos/INSS/IRRF caso presentes).
+
+**Saída:**
+
+* Planilha alterada com colunas padronizadas e formatações aplicadas.
+
+**Aviso:** Ajuste índices/linhas se seu layout for diferente.
+
+---
+
+### `remover_linhas_vazias.vba` — `Remover_Vazias`
+
+**Objetivo:**
+Remover linhas inteiramente vazias em um intervalo fixo (do Excel o código define intervalo `A:J` por linha).
+
+**Entradas esperadas / premissas:**
+
+* Executar na aba com os dados (ActiveSheet).
+* O range verificado por linha é `A` até `J`.
+* O loop inicia da última linha preenchida até a linha 3 (preservando cabeçalhos até a linha 2).
+
+**O que faz:**
+
+* Para cada linha (de baixo para cima) conta quantas células preenchidas há em `A:J`. Se for zero, a linha é deletada.
+
+**Saída:**
+
+* Linhas vazias removidas.
+
+**Aviso importante:**
+
+* Comentário no código: *pode misturar conteúdos de uma linha com outra ao subir os dados* — isso significa que, dependendo do layout, ao deletar linhas o deslocamento de dados pode causar efeitos indesejados se existirem partes soltas de dados fora do intervalo esperado. Sempre testar em cópia.
+
+---
+
+### `colorir_historicos_iguais.vba` — `Planilha_Modelo_Colorir`
+
+**Objetivo:**
+Aplicar uma coloração em tons pastéis em linhas cujo texto de histórico (antes de um segundo hífen `-`) seja igual, facilitando a identificação de entradas semelhantes.
+
+**Entradas esperadas / premissas:**
+
+* Analisa uma coluna de histórico em cada linha; extrai o trecho antes do segundo `-` (se existir) e usa esse trecho como chave.
+* Pinta o intervalo `B:F` da linha com a cor atribuída àquela chave.
+
+**O que faz:**
+
+* Cria um dicionário (Dictionary) para mapear cada texto de histórico a uma cor (array de cores predeterminado em RGB).
+* Aplica a cor correspondente às células B até F daquela linha.
+
+**Saída:**
+
+* Planilha com linhas coloridas em tons pastéis de acordo com similaridade do histórico.
+
+---
+
+### `moverdados.vba` — `Planilha_Extrato_CopiarValoresParaPlanilhaModelo`
+
+**Objetivo:**
+Copiar um bloco de dados de uma aba `EXTRATO` para uma aba chamada `PLANILHA_MODELO`, apenas os valores (sem fórmulas).
+
+**Entradas esperadas / premissas:**
+
+* Aba origem: `EXTRATO` (o código seleciona essa aba no início).
+* Aba destino: `PLANILHA_MODELO`.
+* O bloco de origem parece ser definido como `E3:I<ultimaLinha>` (verifique no seu arquivo). O cálculo de `ultimaLinha` utiliza pesquisas nas colunas L/M/... — revise se seu layout diferir.
+
+**O que faz:**
+
+* Encontra a última linha com dados (com base nas colunas checadas), determina o intervalo de origem e cola os valores em `PLANILHA_MODELO` começando na coluna B na próxima linha vazia.
+
+**Saída:**
+
+* Dados copiados (valores) para `PLANILHA_MODELO`.
+
+**Observação:**
+
+* Se o layout da sua planilha for diferente (colunas/linhas), ajuste as referências no código.
+
+---
+
+### `exportar_txt_padrao_dominiocontabil.vba` — `Planilha_Dominio_Exportar_TXT`
+
+**Objetivo:**
+Exportar a aba `DOMINIO` para um arquivo `.txt` no mesmo diretório do arquivo Excel, no formato padrão usado pelo "Domínio Contábil" (campos separados por `;`).
+
+**Entradas esperadas / premissas:**
+
+* Aba chamada `DOMINIO` contendo pelo menos 6 colunas com os dados a exportar.
+
+**O que faz:**
+
+* Percorre as linhas da planilha e escreve cada registro em uma linha do TXT, concatenando até 6 campos e substituindo quebras de linha por espaços.
+* Gera o arquivo na mesma pasta do arquivo Excel aberto.
+
+**Saída:**
+
+* Arquivo `.txt` criado com os registros separados por ponto-e-vírgula.
+
+---
+
+### `exportar_dados_txt_personalizado_mesma_pasta_do_arquivo.vba` — `Planilha_Modelo_Exportar_Personalizado`
+
+**Objetivo:**
+Exportar dados escolhidos pelo usuário para um `.txt` personalizado (mesma pasta do arquivo Excel). A seleção de quais colunas exportar é feita por um formulário (`frmSelecionarColunas`).
+
+**Entradas esperadas / premissas:**
+
+* Existe um UserForm chamado `frmSelecionarColunas` com checkboxes para as colunas que podem ser exportadas.
+* A planilha de origem e destino intermediário são manipuladas conforme o formulário.
+
+**O que faz:**
+
+* Exibe o formulário para o usuário selecionar colunas.
+* Gera uma planilha temporal com a ordem de colunas escolhida e exporta o conteúdo para um TXT.
+
+**Aviso:**
+
+* Se `frmSelecionarColunas` não estiver presente, a macro irá falhar. Garanta que o formulário esteja no projeto VBA.
+
+---
+
+### `removersinal_cred_deb.vba` — `Planilha_Extrato_SepararCreditoDebito`
+
+**Objetivo:**
+Tratar valores em extratos que utilizam um sufixo ` D` ou ` C` para indicar débito/ crédito e separar estes valores em linhas distintas quando necessário.
+
+**Entradas esperadas / premissas:**
+
+* Executar na aba com o extrato (ActiveSheet).
+* Valores de crédito e débito localizados nas colunas 3 e 4 (C e D no layour padrão do código).
+
+**O que faz:**
+
+* Percorre as linhas (de baixo para cima) verificando sinais `D`/`C` no final dos valores.
+* Quando encontra casos que precisam ser separados, duplica a linha e ajusta as colunas de crédito/débito para que cada linha represente apenas crédito ou débito.
+
+**Saída:**
+
+* Planilha com entradas separadas corretamente (uma linha por lançamento, crédito ou débito), removendo os sufixos ` D`/` C` dos valores.
+
+---
+
+### `alterar_datas_definir_uma_padrao.vba` — `Planilha_Modelo_PreencherDatas`
+
+**Objetivo:**
+Preencher uma coluna de datas com um valor formado pelos campos `B4` (dia), `C4` (mês) e `D4` (ano), aplicado em todas as linhas que tiverem conteúdo na coluna C, a partir da linha 9.
+
+**Entradas esperadas / premissas:**
+
+* Planilha alvo: `PLANILHA_MODELO`.
+* Células B4, C4, D4 devem conter, respectivamente: dia (ou número), mês e ano.
+
+**O que faz:**
+
+* Lê dia, mês e ano das células definidas e monta a string de data no formato `dd/mm/yyyy`.
+* Preenche coluna B nas linhas onde a coluna C possui valor, do intervalo `9` até a última linha com dados.
+
+**Saída:**
+
+* Coluna B preenchida com a data padrão nas linhas correspondentes.
+
+---
+
+## 6. Boas práticas e avisos
+
+* **Backup**: sempre faça cópia do arquivo original antes de executar macros que deletam ou reescrevem linhas.
+* **Testes**: teste as macros em um subconjunto de dados para confirmar o comportamento esperado.
+* **Nomes de abas**: verifique e ajuste nomes de abas no código (ex.: `EXTRATO`, `PLANILHA_MODELO`, `DOMINIO`) caso sua planilha use outros nomes.
+* **UserForm**: importe/crie `frmSelecionarColunas` para usar a exportação personalizada.
+* **Performance**: macros que percorrem muitas linhas podem ser lentas — sempre desative `ScreenUpdating` e ajuste `Calculation` como feito em algumas rotinas.
+* **Localidade/Data**: as manipulações de data assumem formato `dd/mm/yyyy` de visualização; ajuste se necessário.
+
+---
+
+## 7. Solução de problemas (troubleshooting)
+
+* **Erro: "Subscript out of range"** — normalmente significa que uma aba com o nome esperado não existe. Verifique nomes de planilha usados pelo código.
+* **Macro trava ou é lenta** — reduza o número de linhas processadas ou otimize o intervalo de leitura; certifique-se de que `ScreenUpdating` está desligado durante processamento.
+* **Formulário não encontrado** — importe `frmSelecionarColunas` ou adapte a macro para usar parâmetros diretos em vez do formulário.
+* **Dados embaralhados após remoção de linhas** — rever o intervalo verificado por vazio (A:J). Pode ser necessário ampliar/ reduzir o intervalo para evitar exclusão incorreta.
+
+---
+
+## 8. Contribuições
+
+Contribuições são bem-vindas. Sugestões de melhoria:
+
+* Padronizar a leitura de `ultimaLinha` para sempre usar a mesma coluna de referência.
+* Transformar alguns procedimentos em funções reutilizáveis (ex.: função que retorna `ultimaLinha` de forma consistente).
+* Criar testes (planilhas de amostra) para validar comportamento em vários formatos de extrato.
+
+Se quiser contribuir, abra um *issue* descrevendo o comportamento atual e o objetivo, ou envie um pull request com as alterações.
+
+---
+
+## 9. Licença
+
+Este projeto está sob a licença MIT — sinta-se livre para usar, modificar e redistribuir conforme os termos da MIT.
+
+---
+
+
+Por Victhor Félix
